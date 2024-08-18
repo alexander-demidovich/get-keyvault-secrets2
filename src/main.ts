@@ -26,16 +26,44 @@ async function run() {
         }
 
         if (handler != null) {
-            var actionParameters = new KeyVaultActionParameters().getKeyVaultActionParameters(handler);
-            var keyVaultHelper = new KeyVaultHelper(handler, 100, actionParameters);  
-            azPath = await io.which("az", true);
-            var environment = await executeAzCliCommand("cloud show --query name");
-            environment = environment.replace(/"|\s/g, '');
-            console.log('Running keyvault action against ' + environment);
-            if (environment.toLowerCase() == "azurestack") {
-                await keyVaultHelper.initKeyVaultClient();
-            }    
-            keyVaultHelper.downloadSecrets();
+            var keyVaultNames = this.core.getInput("keyvaults");
+            var keyVaultSecretFiles = this.core.getInput("secretsfiles");
+
+            if (!keyVaultNames && !keyVaultSecretFiles) {
+                var actionParameters = new KeyVaultActionParameters().getKeyVaultActionParameters(handler);
+                var keyVaultHelper = new KeyVaultHelper(handler, 100, actionParameters);  
+                azPath = await io.which("az", true);
+                var environment = await executeAzCliCommand("cloud show --query name");
+                environment = environment.replace(/"|\s/g, '');
+                console.log('Running keyvault action against ' + environment);
+                if (environment.toLowerCase() == "azurestack") {
+                    await keyVaultHelper.initKeyVaultClient();
+                }    
+                keyVaultHelper.downloadSecrets();
+            }
+            
+            var keyVaultNamesArray = keyVaultNames.split(",");
+            var keyVaultSecretFilesArray = keyVaultSecretFiles.split(",");
+            if (keyVaultNamesArray.length != keyVaultSecretFilesArray.length) {
+                core.setFailed("Number of keyvaults and secretsfiles should be equal");
+            }
+            for (var i = 0; i < keyVaultNamesArray.length; i++) {
+                var actionParameters = new KeyVaultActionParameters()
+                    .getKeyVaultActionParametersForSpecificKeyVaultWithFile(
+                        handler, 
+                        keyVaultNamesArray[i],
+                        keyVaultSecretFilesArray[i]);
+
+                var keyVaultHelper = new KeyVaultHelper(handler, 100, actionParameters);  
+                azPath = await io.which("az", true);
+                var environment = await executeAzCliCommand("cloud show --query name");
+                environment = environment.replace(/"|\s/g, '');
+                console.log('Running keyvault action against ' + environment);
+                if (environment.toLowerCase() == "azurestack") {
+                    await keyVaultHelper.initKeyVaultClient();
+                }    
+                keyVaultHelper.downloadSecrets();
+            }
         }        
     } catch (error) {
         core.debug("Get secret failed with error: " + error);

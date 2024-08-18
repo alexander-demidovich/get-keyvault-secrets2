@@ -26,8 +26,8 @@ async function run() {
         }
 
         if (handler != null) {
-            var keyVaultNames = this.core.getInput("keyvaults");
-            var keyVaultSecretFiles = this.core.getInput("secretsfiles");
+            var keyVaultNames = core.getInput("keyvaults");
+            var keyVaultSecretFiles = core.getInput("secretsfiles");
 
             if (!keyVaultNames && !keyVaultSecretFiles) {
                 var actionParameters = new KeyVaultActionParameters().getKeyVaultActionParameters(handler);

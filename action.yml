@@ -1,0 +1,18 @@
+name: 'Azure key vault - Get Secrets'
+description: 'Get Secrets from Azure Key Vault instance and set as output variables. github.com/azure/actions'
+inputs:
+  keyvault:
+    description: 'Name of the azure key vault'
+    required: true
+  secrets:
+    description: 'Name of the secret to be fetched' #Comma separated list of secret keys can be specified
+    required: false
+  secretsfile:
+    description: 'Path of the secret file to be fetched' #Comma separated list of secret keys can be specified
+    required: false
+branding:
+  icon: 'akv.svg'
+  color: 'blue'
+runs:
+  using: 'node20'
+  main: 'lib/main.js'

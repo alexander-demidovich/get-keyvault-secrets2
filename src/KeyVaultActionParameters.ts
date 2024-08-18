@@ -9,23 +9,6 @@ export class KeyVaultActionParameters {
     public keyVaultUrl: string;
     public secretsFilePath: string;
 
-    public getKeyVaultActionParametersForSpecificKeyVaultWithFile(handler: IAuthorizer, keyVault: string, secretsPath: string) : KeyVaultActionParameters {
-        this.keyVaultName = keyVault;
-        this.secretsFilePath = secretsPath;
-
-        if (!this.keyVaultName) {
-            core.setFailed("Vault name not provided.");
-        }
-
-        if (!this.secretsFilePath) {
-          core.setFailed("SecretsFilePath should be provided");
-        }
-
-        var azureKeyVaultDnsSuffix = handler.getCloudSuffixUrl("keyvaultDns").substring(1);
-        this.keyVaultUrl = util.format("https://%s.%s", this.keyVaultName, azureKeyVaultDnsSuffix);
-        return this;
-    }
-
     public getKeyVaultActionParameters(handler: IAuthorizer) : KeyVaultActionParameters {
         this.keyVaultName = core.getInput("keyvault");
         this.secretsFilter = core.getInput("secrets");

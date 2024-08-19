@@ -26,36 +26,41 @@ async function run() {
         }
 
         if (handler != null) {
+          
             azPath = await io.which("az", true);
             var environment = await executeAzCliCommand("cloud show --query name");
             environment = environment.replace(/"|\s/g, '');
             console.log('Running keyvault action against ' + environment);
+            var keyVaultName = core.getInput("keyvault");
+            var secrets = core.getInput("secrets");
+            if (keyVaultName && secrets)
+            {
+                // this code works only when keyvault and secrets are provided as input, for backward compatibility with the version 2
+                console.log('Running keyvault action against input param ' + keyVaultName);
+                console.log('Running keyvault action against with secrets ' + secrets);
 
-            var actionParameters = new KeyVaultActionParameters().getKeyVaultActionParameters(handler);
-            var keyVaultHelper = new KeyVaultHelper(handler, 100, actionParameters);  
-            if (environment.toLowerCase() == "azurestack") {
-                await keyVaultHelper.initKeyVaultClient();
-            }    
-            keyVaultHelper.downloadSecrets();
+                var actionParameters = new KeyVaultActionParameters().getKeyVaultActionParameters(handler);
+                downloadSecrets(handler, environment, actionParameters);
+            }
+           
+            var keyVaultPairsInput = core.getInput("key_vault_with_secret_file_pairs")
+            if (keyVaultPairsInput){            
+                // param key_vault_with_secret_file_pairs in github action looks like this:
+                //      key_vault_with_secret_file_pairs: |
+                //          infra-eu-dev-kv=.github/env/eu/dev/key_vault1.env
+                //          business-eu-dev-kv=.github/env/eu/dev/key_vault2.env
+                var keyVaultPairs = keyVaultPairsInput.split('\n');
 
-            // param key_vault_with_secret_file_pairs in github action looks like this:
-            //      key_vault_with_secret_file_pairs: |
-            //          infra-eu-dev-kv=.github/env/eu/dev/key_vault1.env
-            //          business-eu-dev-kv=.github/env/eu/dev/key_vault2.env
-            var keyVaultPairs = core.getInput("key_vault_with_secret_file_pairs").split('\n');
+                for (var i = 0; i < keyVaultPairs.length; i++) {
+                    var keyVaultPair = keyVaultPairs[i].split('=');
+                    var keyVault = keyVaultPair[0];
+                    var secretsFilePath = keyVaultPair[1];
+                    console.log('Running keyvault action against ' + keyVault);
+                    console.log('Running keyvault action against with secret file ' + secretsFilePath);
 
-            for (var i = 0; i < keyVaultPairs.length; i++) {
-                var keyVaultPair = keyVaultPairs[i].split('=');
-                var keyVault = keyVaultPair[0];
-                var secretsFilePath = keyVaultPair[1];
-                console.log('Running keyvault action against ' + keyVault);
-                console.log('Running keyvault action against with secret file ' + secretsFilePath);
-                var actionParameters = new KeyVaultActionParameters().getKeyVaultActionParametersForSpecificKeyVaultWithFile(handler, keyVault, secretsFilePath);
-                var keyVaultHelper = new KeyVaultHelper(handler, 100, actionParameters);
-                if (environment.toLowerCase() == "azurestack") {
-                    await keyVaultHelper.initKeyVaultClient();
-                }   
-                keyVaultHelper.downloadSecrets();
+                    var actionParameters = new KeyVaultActionParameters().getKeyVaultActionParametersForSpecificKeyVaultWithFile(handler, keyVault, secretsFilePath);
+                    downloadSecrets(handler, environment, actionParameters);
+                }
             }
         }        
     } catch (error) {
@@ -65,6 +70,14 @@ async function run() {
     finally {
         core.exportVariable('AZURE_HTTP_USER_AGENT', prefix);
     }
+}
+
+async function downloadSecrets(handler: IAuthorizer, environment: string, actionParameters: KeyVaultActionParameters) {
+    var keyVaultHelper = new KeyVaultHelper(handler, 100, actionParameters);
+    if (environment.toLowerCase() == "azurestack") {
+        await keyVaultHelper.initKeyVaultClient();
+    }
+    keyVaultHelper.downloadSecrets();
 }
 
 async function executeAzCliCommand(command: string) {

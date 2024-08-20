@@ -36,6 +36,7 @@ export class KeyVaultHelper {
         if (this.keyVaultActionParameters.secretsFilter && this.keyVaultActionParameters.secretsFilter.length === 1 && this.keyVaultActionParameters.secretsFilter[0] === "*") {
              return this.downloadAllSecrets();
         } else {
+            console.log(`Downloading selected secrets with filter: ${this.keyVaultActionParameters.secretsFilter}`);
             let selectedSecrets = this.readKeyValuesFromFilter(this.keyVaultActionParameters.secretsFilter);
             return this.downloadSelectedSecrets(selectedSecrets);
         }
@@ -130,6 +131,7 @@ export class KeyVaultHelper {
       const keyValueMap: Map<string, string> = new Map();
       console.log(`Reading key values from file pattern: ${filePattern}`);
       const filePaths = globSync(filePattern);
+      console.log(`Found ${filePaths.length} files matching the pattern: ${filePattern}`);
       
       for (const filePath of filePaths) {
         console.log(`Reading key values from file: ${filePath}`);

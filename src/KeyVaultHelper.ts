@@ -133,6 +133,10 @@ export class KeyVaultHelper {
       const filePaths = globSync(filePattern);
       console.log(`Found ${filePaths.length} files matching the pattern: ${filePattern}`);
       
+      if (filePaths.length === 0){
+        core.setFailed("No files found matching the pattern: " + filePattern);
+      }
+
       for (const filePath of filePaths) {
         console.log(`Reading key values from file: ${filePath}`);
         const fileContent = readFileSync(filePath, 'utf8');

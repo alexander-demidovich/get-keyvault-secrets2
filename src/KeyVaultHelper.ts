@@ -140,7 +140,7 @@ export class KeyVaultHelper {
       for (const filePath of filePaths) {
         console.log(`Reading key values from file: ${filePath}`);
         const fileContent = readFileSync(filePath, 'utf8');
-        const lines = fileContent.split(',');
+        const lines = fileContent.split('\n');
 
         for (const line of lines) {
           const trimmedLine = line.trim();

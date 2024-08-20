@@ -33,10 +33,15 @@ export class KeyVaultClient extends AzureRestClient {
         this.tokenArgs = null;
         var armresponse = await this.invokeRequest(httpRequest);
         core.debug(`armresponse: "${util.inspect(armresponse, {depth: null})}"`);
+        console.log(`armresponse: "${util.inspect(armresponse, {depth: null})}"`);
+
         var audience = armresponse.body.authentication.audiences[0];
         var kvResourceId = audience.replace("management","vault");
         core.debug(`audience: "${audience}", kvResourceId: "${kvResourceId}"`);
         core.debug(`keyVaultUrl - "${this.keyVaultUrl}"`);
+
+        console.log(`audience: "${audience}", kvResourceId: "${kvResourceId}"`);
+        console.log(`keyVaultUrl - "${this.keyVaultUrl}"`);
         this.tokenArgs = ["--resource", kvResourceId];
         this.apiVersion = "2016-10-01";
         await this.authHandler.getToken(true, this.tokenArgs);

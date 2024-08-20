@@ -132,7 +132,7 @@ export class KeyVaultHelper {
       console.log(`Reading key values from file pattern: ${filePattern}`);
       const filePaths = globSync(filePattern);
       console.log(`Found ${filePaths.length} files matching the pattern: ${filePattern}`);
-      
+
       if (filePaths.length === 0){
         core.setFailed("No files found matching the pattern: " + filePattern);
       }
@@ -140,7 +140,7 @@ export class KeyVaultHelper {
       for (const filePath of filePaths) {
         console.log(`Reading key values from file: ${filePath}`);
         const fileContent = readFileSync(filePath, 'utf8');
-        const lines = fileContent.split('\n');
+        const lines = fileContent.split(',');
 
         for (const line of lines) {
           const trimmedLine = line.trim();
